@@ -40,6 +40,6 @@ export const errorHandler = (err, req, res, next) => {
     console.error(err);
     sendDevError(err, res);
   } else {
-    // sendProdError(err, res);
+    sendProdError(err, res);
   }
 };

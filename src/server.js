@@ -5,12 +5,15 @@ import cors from "cors";
 import path from "path";
 import helmet from "helmet";
 import express from "express";
-import swaggerUi from "swagger-ui-express";
 import enableWs from "express-ws";
+import swaggerUi from "swagger-ui-express";
+import * as Sentry from "@sentry/node";
+import * as Tracing from "@sentry/tracing";
 
 import { cameraRouter } from "./router/cameraRouter.js";
 import { configRouter } from "./router/configRouter.js";
 import { authRouter } from "./router/authRouter.js";
+
 
 import { errorHandler } from "./middleware/errorHandler.js";
 import { observationRouter } from "./router/observationRouter.js";
@@ -39,6 +42,20 @@ app.use(express.static(path.join(path.resolve(), "src/public")));
 app.use(cors());
 app.options("*", cors());
 app.use(helmet({ contentSecurityPolicy: false }));
+
+// Sentry
+Sentry.init({
+  dsn: process.env.SENTRY_DSN,
+  integrations: [
+    new Sentry.Integrations.Http({ tracing: true }),
+    new Tracing.Integrations.Express({ app }),
+  ],
+  environment: process.env.SENTRY_ENV,
+  tracesSampleRate: 1.0,
+});
+
+app.use(Sentry.Handlers.requestHandler());
+app.use(Sentry.Handlers.tracingHandler());
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -79,6 +96,8 @@ app.ws("/observations/:ip", (ws, req) => {
 });
 
 // Error handler
+
+app.use(Sentry.Handlers.errorHandler());
 app.use(errorHandler);
 app.all("*", notFoundController);
 
