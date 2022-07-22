@@ -9,5 +9,8 @@ RUN npm install
 
 COPY . .
 
+RUN chmod +x ./start.sh
+
 EXPOSE 8090
-CMD [ "node", "src/server.js" ]
+
+ENTRYPOINT [ "./start.sh" ]

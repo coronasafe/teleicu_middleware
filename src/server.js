@@ -7,9 +7,12 @@ import helmet from "helmet";
 import express from "express";
 import swaggerUi from "swagger-ui-express";
 import enableWs from "express-ws";
+import session from "express-session";
+import flash from "connect-flash";
 
 import { cameraRouter } from "./router/cameraRouter.js";
 import { configRouter } from "./router/configRouter.js";
+import { assetConfigRouter } from "./router/assetConfigRouter.js";
 import { authRouter } from "./router/authRouter.js";
 
 import { errorHandler } from "./middleware/errorHandler.js";
@@ -33,6 +36,17 @@ const ws = enableWs(app);
 
 app.set("view engine", "ejs");
 app.set("views", path.join(path.resolve(), "src/views"));
+
+// flash messages
+app.use(session({
+  cookieName: "session",
+  secret: "ufhq7s-o1%^bn7j6wasec04-mjb*zv^&0@$lb3%9%w3t5pq3^3",
+  httpOnly: true,
+  maxAge: 1000 * 60 * 30,
+  resave: true,
+  saveUninitialized: true
+}));
+app.use(flash());
 
 app.use(getWs(ws));
 app.use(express.static(path.join(path.resolve(), "src/public")));
@@ -65,6 +79,7 @@ app.use(authRouter);
 app.use(cameraRouter);
 app.use(observationRouter);
 app.use(configRouter);
+app.use(assetConfigRouter);
 app.use(serverStatusRouter);
 app.use(healthRouter);
 
