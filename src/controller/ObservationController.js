@@ -22,6 +22,7 @@ var staticObservations = [];
 var activeDevices = [];
 var lastRequestData = {};
 var logData = [];
+var lastRequestTime = null;
 
 // start updating after 1 minutes of starting the middleware
 let lastUpdatedToCare = new Date() - 59 * 60 * 1000;
@@ -205,7 +206,7 @@ const updateObservationsToCare = async () => {
       console.log("Building Payload");
 
       // additional check to see if temperature is within range
-      console.log(data)
+      console.log(data);
       let temperature = getValueFromData(data["body-temperature1"]?.[0]);
       let temperature_measured_at = null;
       // const temperature_low_limit = data["body-temperature1"]?.[0]?.["low-limit"];
@@ -394,9 +395,18 @@ export class ObservationController {
     return res.json(lastRequestData);
   }
 
+  static getLastRequestTime = async (req, res) => {
+    const withinLastMinute = dayjs().diff(lastRequestTime, "minute") < 1;
+    const statusCode = withinLastMinute ? 200 : 412; // 412 Precondition Failed ( update_observations has not been called in the last minute )
+    res.status(statusCode).send({
+      time: lastRequestTime?.toISOString() ?? null,
+    });
+  };
+
   static updateObservations = (req, res) => {
     // database logic
     lastRequestData = req.body;
+    lastRequestTime = new Date();
     // console.log("updateObservations", req.body);
     addLogData(req.body);
     const observations = req.body;

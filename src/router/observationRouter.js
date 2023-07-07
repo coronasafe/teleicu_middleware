@@ -28,4 +28,6 @@ router.get("/get_log_data", ObservationController.getLogData);
 
 router.get("/get_last_request_data", ObservationController.getLastRequestData);
 
+router.get("/get_last_request_time", ObservationController.getLastRequestTime);
+
 export { router as observationRouter };
