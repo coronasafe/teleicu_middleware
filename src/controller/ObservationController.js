@@ -17,6 +17,7 @@ import { generateHeaders } from "../utils/assetUtils.js";
 import { isValid } from "../utils/ObservationUtils.js";
 import { makeDataDumpToJson } from "./helper/makeDataDump.js";
 import { updateObservationAuto } from "../automation/autoDataExtractor.js";
+import {updateObservationAutoV2} from "../automation/autoDataExtractorV2.js";
 
 const prisma = new PrismaClient();
 
@@ -320,9 +321,16 @@ const updateObservationsToCare = async () => {
           cameraParams,
           monitorPreset
         );
+
+        const v3Payload = await updateObservationAutoV2(
+          cameraParams,
+          monitorPreset
+        );
+
         await makeDataDumpToJson(
           payload,
           v2Payload,
+          v3Payload,
           asset.externalId,
           patient_id,
           consultation_id

@@ -101,7 +101,7 @@ const extractData = async (camParams, monitorPreset = { x: 0, y: 0, z: 0 }) => {
     const bodyFormData = new FormData();
     bodyFormData.append("image", fs.createReadStream(imagePath));
 
-    const response = await axios.post(OCR_URL, bodyFormData, {
+    const response = await axios.post(OCR_URL + "predict", bodyFormData, {
       headers: {
         ...bodyFormData.getHeaders(),
       },

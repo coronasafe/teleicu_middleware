@@ -13,6 +13,7 @@ dotenv.config({ path: "./.env" });
 export const makeDataDumpToJson = async (
   v1Payload,
   v2Payload,
+  v3Payload,
   assetExternalId,
   patient_id,
   consultation_id
@@ -31,6 +32,7 @@ export const makeDataDumpToJson = async (
       consultation_id: consultation_id,
       v1Payload: v1Payload,
       v2Payload: v2Payload,
+      v3Payload: v3Payload,
     };
 
     const params = {
