@@ -1,11 +1,11 @@
-import pidusage from "pidusage";
+import type { Request, Response } from "express";
+import expressWs from "express-ws";
 import { loadavg } from "os";
+import pidusage from "pidusage";
 
+import type { WebSocket } from "@/types/ws";
 import { eventType } from "@/utils/eventTypeConstant";
 import { filterClients } from "@/utils/wsUtils";
-import expressWs from "express-ws";
-import type { WebSocket } from "@/types/ws";
-import type { Request, Response } from "express";
 
 export class ServerStatusController {
   static init(ws: expressWs.Instance) {
@@ -51,6 +51,6 @@ export class ServerStatusController {
   }
 
   static render(req: Request, res: Response) {
-    res.render("pages/serverStatus");
+    res.render("pages/serverStatus", { req });
   }
 }

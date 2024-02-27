@@ -40,7 +40,7 @@ export class CameraUtils {
             if (error) return reject(error);
             if (presets) return resolve(presets);
           });
-        })
+        }),
     );
 
   static getStatus = async ({ camParams }) =>
@@ -52,7 +52,7 @@ export class CameraUtils {
             if (error) return reject(error);
             if (status) return resolve(status);
           });
-        })
+        }),
     );
 
   static absoluteMove = async ({ camParams, x, y, zoom }) =>

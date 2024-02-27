@@ -1,6 +1,8 @@
+import type { ErrorRequestHandler, Response } from "express";
+
+import { nodeEnv } from "@/utils/configs";
 import { eventType } from "@/utils/eventTypeConstant";
 import { filterClients } from "@/utils/wsUtils";
-import type { Response, ErrorRequestHandler } from "express";
 
 const sendDevError = (err: any, res: Response) => {
   res.status(err.statusCode).json({
@@ -22,8 +24,6 @@ export const errorHandler: ErrorRequestHandler = (err, req, res, next) => {
   err.statusCode = err.statusCode || 500;
   err.status = err.status || "error";
 
-  const env = process.env.NODE_ENV;
-
   const data = {
     type: eventType.Error,
     time: new Date().toISOString(),
@@ -36,7 +36,7 @@ export const errorHandler: ErrorRequestHandler = (err, req, res, next) => {
   const server = req.wsInstance.getWss();
   filterClients(server, "/logger").forEach((c) => c.send(JSON.stringify(data)));
 
-  if (env === "development") {
+  if (nodeEnv === "development") {
     console.error(err);
     sendDevError(err, res);
   } else {

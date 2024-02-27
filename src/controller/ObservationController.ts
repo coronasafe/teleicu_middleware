@@ -1,18 +1,10 @@
-import { getAsset, getBedById, getPatientId } from "@/utils/dailyRoundUtils";
+import axios from "axios";
+import dayjs from "dayjs";
+import type { Request, Response } from "express";
+
 import { BadRequestException } from "@/Exception/BadRequestException";
 import { NotFoundException } from "@/Exception/NotFoundException";
-import { ObservationsMap } from "@/utils/ObservationsMap";
-import { PrismaClient } from "@prisma/client";
-import axios from "axios";
-import { careApi } from "@/utils/configs";
-import { catchAsync } from "@/utils/catchAsync";
-import dayjs from "dayjs";
-import { filterClients } from "@/utils/wsUtils";
-import { generateHeaders } from "@/utils/assetUtils";
-import { isValid } from "@/utils/ObservationUtils";
-import { makeDataDumpToJson } from "@/controller/helper/makeDataDump";
-import { updateObservationAuto } from "@/automation/autoDataExtractor";
-import type { Request, Response } from "express";
+import prisma from "@/lib/prisma";
 import type {
   DailyRoundObservation,
   LastObservationData,
@@ -23,8 +15,15 @@ import type {
   StaticObservation,
 } from "@/types/observation";
 import { WebSocket } from "@/types/ws";
-
-const prisma = new PrismaClient();
+import { isValid } from "@/utils/ObservationUtils";
+import { ObservationsMap } from "@/utils/ObservationsMap";
+import { generateHeaders } from "@/utils/assetUtils";
+import { updateObservationAuto } from "@/utils/autoDataExtractor";
+import { catchAsync } from "@/utils/catchAsync";
+import { careApi, saveDailyRound } from "@/utils/configs";
+import { getAsset, getBedById, getPatientId } from "@/utils/dailyRoundUtils";
+import { makeDataDumpToJson } from "@/utils/makeDataDump";
+import { filterClients } from "@/utils/wsUtils";
 
 const dailyRoundTag = () => new Date().toISOString() + " [Daily Round] ";
 
@@ -64,7 +63,7 @@ setInterval(() => {
           value: S3_DATA_DUMP_INTERVAL / (1000 * 60),
         },
       },
-    }
+    },
   );
 
   observationData = [];
@@ -98,7 +97,7 @@ const addObservation = (observation: Observation) => {
         // Slice the observations to the last DEFAULT_LISTING_LIMIT entries
         const slicedObservations =
           item.observations[observation.observation_id]?.slice(
-            -DEFAULT_LISTING_LIMIT
+            -DEFAULT_LISTING_LIMIT,
           ) || [];
         return {
           ...item,
@@ -140,7 +139,7 @@ const addLogData = (newData: Observation[][]) => {
 
 const updateLastObservationData = (
   flattenedObservations: Observation[],
-  skipEmpty = true
+  skipEmpty = true,
 ) => {
   flattenedObservations.forEach((observation) => {
     const observationId: ObservationTypeWithWaveformTypes =
@@ -185,7 +184,7 @@ const updateObservationsToCare = async () => {
         "|",
         data.status,
         "|",
-        data.value
+        data.value,
       );
       return null;
     } else if (stale) {
@@ -195,7 +194,7 @@ const updateObservationsToCare = async () => {
         "|",
         observationDate.toISOString(),
         "|",
-        new Date().toISOString()
+        new Date().toISOString(),
       );
       return null;
     } else {
@@ -213,7 +212,7 @@ const updateObservationsToCare = async () => {
         console.log(
           dailyRoundTag() +
             "Skipping stale observations for device: " +
-            observation.device_id
+            observation.device_id,
         );
         continue;
       }
@@ -221,7 +220,7 @@ const updateObservationsToCare = async () => {
       console.log(
         dailyRoundTag() +
           ">> Updating observation for device:" +
-          observation.device_id
+          observation.device_id,
       );
 
       const asset = await getAsset(observation.device_id);
@@ -229,25 +228,25 @@ const updateObservationsToCare = async () => {
         console.error(
           dailyRoundTag() +
             "Asset not found for assetIp: " +
-            observation.device_id
+            observation.device_id,
         );
         continue;
       }
 
       const { consultation_id, patient_id, bed_id } = await getPatientId(
-        asset.externalId
+        asset.externalId,
       );
       if (!patient_id) {
         console.error(
           dailyRoundTag() +
             "Patient not found for assetExternalId: " +
-            asset.externalId
+            asset.externalId,
         );
         continue;
       }
 
       console.error(
-        dailyRoundTag() + "Compiling data for assetIp: " + asset.ipAddress
+        dailyRoundTag() + "Compiling data for assetIp: " + asset.ipAddress,
       );
 
       const data = observation.observations;
@@ -260,7 +259,7 @@ const updateObservationsToCare = async () => {
         temperature: data["body-temperature1"]?.[0]?.value,
         temperature_measured_at: dayjs(
           data["body-temperature1"]?.[0]?.["date-time"],
-          "YYYY-MM-DD HH:mm:ss"
+          "YYYY-MM-DD HH:mm:ss",
         ).toISOString(),
         bp: {
           systolic: data["blood-pressure"]?.[0]?.systolic?.value,
@@ -334,11 +333,11 @@ const updateObservationsToCare = async () => {
         "Attempt to update data for asset: ",
         asset.ipAddress,
         "with payload: ",
-        payload
+        payload,
       );
       if (!payloadHasData(payload)) {
         console.error(
-          dailyRoundTag() + "No data to update for assetIp: " + asset.ipAddress
+          dailyRoundTag() + "No data to update for assetIp: " + asset.ipAddress,
         );
         continue;
       }
@@ -368,7 +367,7 @@ const updateObservationsToCare = async () => {
 
         const [v2Payload, b64Image] = await updateObservationAuto(
           cameraParams,
-          monitorPreset
+          monitorPreset,
         );
         await makeDataDumpToJson(
           {
@@ -379,7 +378,7 @@ const updateObservationsToCare = async () => {
             consultation_id,
             b64Image,
           },
-          `${asset.externalId}--${new Date().getTime()}.json`
+          `${asset.externalId}--${new Date().getTime()}.json`,
         );
       } catch (err) {
         console.log("updateObservationsToCare:Data dump failed", err);
@@ -388,13 +387,13 @@ const updateObservationsToCare = async () => {
         .post(
           `${careApi}/api/v1/consultation/${consultation_id}/daily_rounds/`,
           payload,
-          { headers: await generateHeaders(asset.externalId) }
+          { headers: await generateHeaders(asset.externalId) },
         )
         .then((res) => {
-          if (!process.env.SKIP_SAVING_DAILY_ROUND) {
+          if (saveDailyRound) {
             prisma.dailyRound.create({
               data: {
-                assetId: asset.id,
+                assetExternalId: asset.externalId,
                 status: res.statusText,
                 data: JSON.stringify(payload),
                 response: JSON.stringify(res.data),
@@ -405,15 +404,15 @@ const updateObservationsToCare = async () => {
           console.log(
             dailyRoundTag() +
               "Updated observation for device: " +
-              asset.ipAddress
+              asset.ipAddress,
           );
           return res;
         })
         .catch((err) => {
-          if (!process.env.SKIP_SAVING_DAILY_ROUND) {
+          if (saveDailyRound) {
             prisma.dailyRound.create({
               data: {
-                assetId: asset.id,
+                assetExternalId: asset.externalId,
                 status: err.response.statusText,
                 data: JSON.stringify(payload),
                 response: JSON.stringify(err.response?.data),
@@ -424,7 +423,7 @@ const updateObservationsToCare = async () => {
           console.error(
             dailyRoundTag() +
               "Error updating observations to care for assetIp: " +
-              asset.ipAddress
+              asset.ipAddress,
           );
           return err.response;
         });
@@ -432,7 +431,7 @@ const updateObservationsToCare = async () => {
       console.error(
         dailyRoundTag() +
           "Error performing observations for assetIp: " +
-          observation.device_id
+          observation.device_id,
       );
       console.error(error);
     }
@@ -444,7 +443,7 @@ const filterStatusData = () => {
   const MIN_IN_MS = 60000;
   statusData = statusData.filter(
     (status) =>
-      new Date().getTime() - new Date(status.time).getTime() <= 30 * MIN_IN_MS
+      new Date().getTime() - new Date(status.time).getTime() <= 30 * MIN_IN_MS,
   );
 };
 
@@ -452,15 +451,18 @@ const parseDataAsStatus = (data: Observation[][]) => {
   return {
     time: new Date(new Date().setSeconds(0, 0)).toISOString(),
 
-    status: data.reduce((acc, device_observations) => {
-      device_observations.forEach((observation) => {
-        const { device_id, status } = observation;
-        acc[device_id] =
-          status?.toLowerCase() === "disconnected" ? "down" : "up";
-      });
+    status: data.reduce(
+      (acc, device_observations) => {
+        device_observations.forEach((observation) => {
+          const { device_id, status } = observation;
+          acc[device_id] =
+            status?.toLowerCase() === "disconnected" ? "down" : "up";
+        });
 
-      return acc;
-    }, {} as ObservationStatus["status"]),
+        return acc;
+      },
+      {} as ObservationStatus["status"],
+    ),
   };
 };
 
@@ -470,7 +472,7 @@ const addStatusData = (data: Observation[][]) => {
   const newStatus = parseDataAsStatus(data);
 
   const index = statusData.findIndex(
-    (status) => status.time === newStatus.time
+    (status) => status.time === newStatus.time,
   );
 
   if (index === -1) {
@@ -501,7 +503,7 @@ export class ObservationController {
     }
     // console.log("Filtering");
     const filtered = staticObservations.filter(
-      (observation) => observation.device_id === ip
+      (observation) => observation.device_id === ip,
     );
     // Sort the observation by last updated time.
     // .sort(
@@ -548,19 +550,19 @@ export class ObservationController {
       (client: WebSocket) => {
         const filteredObservations = flattenedObservations?.filter(
           (observation: Observation) =>
-            observation?.device_id === client?.params?.ip
+            observation?.device_id === client?.params?.ip,
         );
 
         if (lastObservationData["blood-pressure"]?.[client?.params?.ip!]) {
           filteredObservations?.push(
-            lastObservationData["blood-pressure"][client?.params?.ip!]
+            lastObservationData["blood-pressure"][client?.params?.ip!],
           );
         }
 
         if (filteredObservations.length) {
           client.send(JSON.stringify(filteredObservations));
         }
-      }
+      },
     );
 
     flattenedObservations.forEach((observation: Observation) => {

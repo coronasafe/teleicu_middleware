@@ -128,3 +128,5 @@ dist
 images/
 
 .DS_Store
+
+keys.json

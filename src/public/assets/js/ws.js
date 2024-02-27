@@ -49,7 +49,7 @@ const getRequestLogTemplate = ({ time, method, url, status, responseTime }) => {
       "break-all",
       "text-sm",
       "font-medium",
-      "text-gray-900"
+      "text-gray-900",
     );
     tr.appendChild(td);
   });
@@ -80,7 +80,7 @@ const getErrorLogTemplate = ({ time, status, method, message, url }) => {
       "break-all",
       "text-sm",
       "font-medium",
-      "text-gray-900"
+      "text-gray-900",
     );
     tr.appendChild(td);
   });
@@ -131,7 +131,7 @@ function connect() {
   ws.onclose = function (e) {
     console.log(
       "Connection is closed. Reconnect will be attempted in 1 second.",
-      e.reason
+      e.reason,
     );
 
     serverStatusDot.classList.remove("bg-green-500");

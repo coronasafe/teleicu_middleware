@@ -21,6 +21,7 @@
       </script>
 
       <form action="/beds/<%- bed.id %>/delete" class="w-2/3 mx-auto" method="post">
+        <input type="hidden" name="csrfToken" value="<%= csrfToken %>" />
         <div class="flex flex-col mt-2">
             <label for="name">Name</label>
             <input class="px-2 py-1 border-2 border-black" type="text" placeholder="Bed name" name="name" id="name" value="<%- bed.name %>" readonly/>

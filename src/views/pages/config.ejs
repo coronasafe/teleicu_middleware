@@ -9,6 +9,7 @@
     <main class="py-8">
       <%- include("../partials/pageTitle",{title:"Config"}) %>
       <form action="/config" method="post" class="my-6">
+        <input type="hidden" name="csrfToken" value="<%= csrfToken %>" />
         <div class="my-3">
           <label for="hostname"> Hostname </label>
           <input

@@ -1,10 +1,9 @@
-import { Prisma, PrismaClient } from "@prisma/client";
 import axios from "axios";
-import { generateHeaders } from "@/utils/assetUtils";
-import { careApi } from "@/utils/configs";
 import type { AxiosRequestHeaders } from "axios";
 
-const prisma = new PrismaClient();
+import prisma from "@/lib/prisma";
+import { generateHeaders } from "@/utils/assetUtils";
+import { careApi } from "@/utils/configs";
 
 export const getAsset = async (assetIp: string) => {
   return await prisma.asset.findFirst({
@@ -28,7 +27,7 @@ export const getPatientId = async (assetExternalId: string) => {
     .catch((err) => {
       console.log(
         "[Daily Round] Failed to fetch patient_id from care",
-        err.message
+        err.message,
       );
       console.log(err?.response?.status, err?.response?.data);
       return {};
@@ -47,11 +46,7 @@ export const getPatientId = async (assetExternalId: string) => {
 //   });
 // };
 
-export const getBedById = async (
-  bedId: string
-): Promise<null | Prisma.BedGetPayload<{
-  include: { camera: true; monitorPreset: true };
-}>> => {
+export const getBedById = async (bedId: string) => {
   return prisma.bed.findFirst({
     where: {
       externalId: bedId,

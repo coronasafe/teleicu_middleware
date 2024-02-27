@@ -1,20 +1,25 @@
 {
+  "$schema": "https://json.schemastore.org/tsconfig",
   "compilerOptions": {
-    "target": "ES6", // Set the target ECMAScript version
-    "module": "commonjs", // Use CommonJS modules for Node.js
-    "outDir": "./dist", // Specify the output directory for compiled files
-    "rootDir": "./", // Specify the root directory of your TypeScript source files
-
-    "esModuleInterop": true, // Enable ES Module Interoperability
-    "strict": true, // Enable strict type checking
-    "skipLibCheck": true, // Skip type checking of declaration files
-    "forceConsistentCasingInFileNames": true, // Enforce consistent file name casing
-    "moduleResolution": "node", // Use Node.js-style module resolution
-    "allowJs": true, // Allow JavaScript files to be compiled
-
-    "baseUrl": "./", // Set the base URL for module resolution
+    "lib": ["es2023"],
+    "module": "CommonJS",
+    "target": "es2022",
+    "typeRoots": ["node_modules/@types", "src/types"],
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "pretty": true,
+    "allowJs": true,
+    "noEmit": false,
+    "resolveJsonModule": true,
+    // "importHelpers": true,
+    "outDir": "dist",
+    "baseUrl": "src",
     "paths": {
-      "@/*": ["src/*"] // Configure path aliases for imports
+      "@/*": ["*"]
     }
-  }
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "src/public"]
 }

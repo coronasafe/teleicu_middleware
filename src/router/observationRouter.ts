@@ -1,10 +1,10 @@
+import express from "express";
+
 import {
   observationsValidators,
   vitalsValidator,
 } from "@/Validators/observationValidators";
-
 import { ObservationController } from "@/controller/ObservationController";
-import express from "express";
 import { validate } from "@/middleware/validate";
 
 const router = express.Router();
@@ -14,13 +14,13 @@ router.get("/get_observations", ObservationController.getObservations);
 router.post(
   "/update_observations",
   validate(observationsValidators),
-  ObservationController.updateObservations
+  ObservationController.updateObservations,
 );
 
 router.get(
   "/vitals",
   validate(vitalsValidator),
-  ObservationController.getLatestVitals
+  ObservationController.getLatestVitals,
 );
 
 router.get("/get_time", ObservationController.getTime);

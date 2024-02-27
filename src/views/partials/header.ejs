@@ -1,3 +1,10 @@
-<header class="py-4 border-b">
+<header class="py-4 border-b flex justify-between">
   <h1 class="text-xl">TeleICU Middleware</h1>
+  <% if (req?.user?.id ?? false) { %>
+    <form action="/auth/logout" method="POST">
+      <button class="px-4 py-2 my-2 hover:bg-red-700 bg-red-500">Logout</button>
+    </form>
+  <% } else { %>
+    <a href="/auth/login" class="px-4 py-2 my-2 transition hover:bg-primary-500 hover:text-white">Login</a>
+  <% } %>
 </header>

@@ -11,20 +11,21 @@ datasource db {
 }
 
 enum AssetType {
-  CAMERA
-  MONITOR
+  ONVIF
+  HL7MONITOR
+  VENTILATOR
 }
 
 model Asset {
-  id          Int          @id @default(autoincrement())
+  externalId  String       @id @default(uuid())
   name        String
-  type        AssetType    @default(MONITOR)
+  type        AssetType    @default(HL7MONITOR)
   description String
-  externalId  String       @unique
-  ipAddress   String       @unique
+  ipAddress   String
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @default(now())
   deleted     Boolean      @default(false)
+  accessKey   String?
   username    String?
   password    String?
   port        Int?         @default(80)
@@ -35,15 +36,15 @@ model Asset {
 }
 
 model Bed {
-  id            Int      @id @default(autoincrement())
-  name          String
-  externalId    String   @unique
-  monitorPreset Preset?
-  camera        Asset    @relation(fields: [cameraId], references: [id])
-  cameraId      Int
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @default(now())
-  deleted       Boolean  @default(false)
+  id               Int      @id @default(autoincrement())
+  name             String
+  externalId       String   @unique
+  monitorPreset    Preset?
+  camera           Asset?   @relation(fields: [cameraExternalId], references: [externalId], onDelete: SetNull, onUpdate: Cascade)
+  cameraExternalId String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @default(now())
+  deleted          Boolean  @default(false)
 }
 
 model Preset {
@@ -56,11 +57,11 @@ model Preset {
 }
 
 model DailyRound {
-  id       Int      @id @default(autoincrement())
-  assetId  Int
-  status   String
-  data     String
-  response String
-  time     DateTime @default(now())
-  asset    Asset    @relation(fields: [assetId], references: [id])
+  id              Int      @id @default(autoincrement())
+  assetExternalId String
+  status          String
+  data            String
+  response        String
+  time            DateTime @default(now())
+  asset           Asset    @relation(fields: [assetExternalId], references: [externalId], onDelete: Cascade, onUpdate: Cascade)
 }

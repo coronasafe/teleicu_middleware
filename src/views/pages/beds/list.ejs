@@ -16,34 +16,9 @@
             <% }) %>
           </div>
       <% } %>
-
-      <form action="" class="w-fit" method="post">
-        <p>
-            <h3>
-                Add New Bed
-            </h3>
-        </p>
-        <div class="flex flex-wrap items-center my-4 gap-4">
-            <input class="p-2 border-2 border-black" type="text" placeholder="Name" name="name" id="name" value="" />
-            <input class="p-2 border-2 border-black" type="text" placeholder="UUID" name="externalId" id="externalId" value="" />
-            <select class="p-2 border-2 border-black" name="cameraId" id="cameraId" placeholder="Camera">
-              <option value="" disabled selected>Select a Camera</option>
-              <% cameras.forEach(function(camera){ %>
-                <option class="truncate" value="<%= camera.id %>"><%= camera.name  %></option>
-              <% }) %>
-            </select>
-            
-            <div class="w-full flex flex-wrap items-center my-4 gap-4">
-                <h3>Add Monitor Preset</h3>
-
-                <input class="p-2 border-2 border-black" type="text" placeholder="Preset x" name="preset_x" id="preset_x" value="" />
-                <input class="p-2 border-2 border-black" type="text" placeholder="Preset y" name="preset_y" id="preset_y" value="" />
-                <input class="p-2 border-2 border-black" type="text" placeholder="Preset zoom" name="preset_zoom" id="preset_zoom" value="" />
-            </div>
-
-            <input class="px-4 py-2 hover:bg-green-700 bg-green-500" type="submit" value="Add" />
-        </div>
-      </form>
+      <div class="float-right">
+        <a class="px-4 py-2 ml-auto hover:bg-green-700 bg-green-500" href="/assets/new">Add New Asset</a>
+      </div>
 
       <table class="w-full table-auto text-left border-separate border-spacing-y-4">
         <tr >
@@ -67,7 +42,7 @@
                 <td class="w-fit">Not Available</td>
             <% } %>
             <td class="w-fit"><%= dayjs(bed.updatedAt).format('DD/MM/YYYY hh:mm:ss a') %></td>
-            <td class="w-fit">
+            <td class="w-fit text-right">
                 <a class="px-4 py-2 my-2 hover:bg-yellow-700 bg-yellow-500" href="/beds/<%= bed.id %>">Edit</a>
                 <a class="px-4 py-2 my-2 hover:bg-red-700 bg-red-500" href="/beds/<%= bed.id %>/delete">Delete</a>
             </td>

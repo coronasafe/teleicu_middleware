@@ -7,7 +7,13 @@
   <body class="max-w-screen-md mx-auto">
     <%- include("../partials/header") %>
     <main>
-      <div class="flex gap-4 my-6">
+      <div class="grid grid-cols-2 gap-4 my-6">
+        <a
+          href="/server-status"
+          class="border flex-1 px-6 py-12 transition cursor-pointer flex items-center justify-center hover:bg-primary-500 hover:text-white"
+        >
+          Status
+        </a>
         <a
           href="/config"
           class="border flex-1 px-6 py-12 transition cursor-pointer flex items-center justify-center hover:bg-primary-500 hover:text-white"
@@ -15,10 +21,16 @@
           Config
         </a>
         <a
-          href="/server-status"
+          href="/assets/"
           class="border flex-1 px-6 py-12 transition cursor-pointer flex items-center justify-center hover:bg-primary-500 hover:text-white"
         >
-          Status
+          Assets
+        </a>
+        <a
+          href="/beds/"
+          class="border flex-1 px-6 py-12 transition cursor-pointer flex items-center justify-center hover:bg-primary-500 hover:text-white"
+        >
+          Bed Presets
         </a>
       </div>
     </main>

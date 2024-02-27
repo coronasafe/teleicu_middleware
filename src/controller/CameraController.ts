@@ -1,7 +1,8 @@
+import type { Request, Response } from "express";
+
 import type { CameraAsset, CameraStatus } from "@/types/camera";
 import { CameraUtils } from "@/utils/CameraUtils";
 import { catchAsync } from "@/utils/catchAsync";
-import type { Request, Response } from "express";
 
 var assets: CameraAsset[] = [];
 var statuses: CameraStatus[] = [];
@@ -11,7 +12,7 @@ const filterStatus = () => {
   const MIN_IN_MS = 60000;
   statuses = statuses.filter(
     (status) =>
-      new Date().getTime() - new Date(status.time).getTime() <= 30 * MIN_IN_MS
+      new Date().getTime() - new Date(status.time).getTime() <= 30 * MIN_IN_MS,
   );
 };
 
@@ -39,15 +40,18 @@ const fetchCameraStatuses = async () => {
           status: "down",
         };
       }
-    })
+    }),
   );
 
   statuses.push({
     time: new Date().toISOString(),
-    status: cameraStatuses.reduce((acc, curr) => {
-      acc[curr.deviceId] = curr.status;
-      return acc;
-    }, {} as CameraStatus["status"]),
+    status: cameraStatuses.reduce(
+      (acc, curr) => {
+        acc[curr.deviceId] = curr.status;
+        return acc;
+      },
+      {} as CameraStatus["status"],
+    ),
   });
 };
 

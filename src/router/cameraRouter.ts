@@ -1,32 +1,32 @@
 import express from "express";
 
-import { CameraController } from "@/controller/CameraController";
-import { validate } from "@/middleware/validate";
 import {
-  setPresetValidators,
   baseGetCameraParamsValidators,
   camMoveValidator,
   gotoPresetValidator,
+  setPresetValidators,
 } from "@/Validators/cameraValidators";
+import { CameraController } from "@/controller/CameraController";
+import { validate } from "@/middleware/validate";
 
 const router = express.Router();
 
 router.get(
   "/presets",
   validate(baseGetCameraParamsValidators),
-  CameraController.getPresets
+  CameraController.getPresets,
 );
 
 router.post(
   "/presets",
   validate(setPresetValidators),
-  CameraController.setPreset
+  CameraController.setPreset,
 );
 
 router.get(
   "/status",
   validate(baseGetCameraParamsValidators),
-  CameraController.getStatus
+  CameraController.getStatus,
 );
 
 router.post("/cameras/status", CameraController.getCameraStatuses);
@@ -34,19 +34,19 @@ router.post("/cameras/status", CameraController.getCameraStatuses);
 router.post(
   "/gotoPreset",
   validate(gotoPresetValidator),
-  CameraController.gotoPreset
+  CameraController.gotoPreset,
 );
 
 router.post(
   "/absoluteMove",
   validate(camMoveValidator),
-  CameraController.absoluteMove
+  CameraController.absoluteMove,
 );
 
 router.post(
   "/relativeMove",
   validate(camMoveValidator),
-  CameraController.relativeMove
+  CameraController.relativeMove,
 );
 
 // BPL Integration

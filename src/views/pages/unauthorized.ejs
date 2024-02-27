@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <%- include('../partials/head.ejs', { title: 'Teleicu Middleware | Home'})
+    %>
+  </head>
+  <body class="max-w-screen-md mx-auto">
+    <%- include("../partials/header") %>
+    <main class="h-[75vh] flex flex-col items-center justify-center">
+      <h1 class="text-8xl">401</h1>
+      <p class="text-2xl mb-8">Unauthorized</p>
+      <div>
+        <a
+        href="/"
+        class="btn m-2 transition bg-primary-500 py-4 px-8 text-white hover:bg-white hover:text-primary-500 border-2 border-primary-500"
+      >
+        Back to home
+      </a>
+      <a
+      href="/auth/login"
+      class="btn m-2 transition bg-primary-500 py-4 px-8 text-white hover:bg-white hover:text-primary-500 border-2 border-primary-500"
+    >
+      Login
+    </a>
+      </div>
+     
+    </main>
+    <%- include("../partials/footer") %>
+  </body>
+</html>

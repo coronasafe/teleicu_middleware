@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <%- include('../../partials/head.ejs', { title: 'Teleicu Middleware | Update Bed'})
+    %>
+  </head>
+  <body class="max-w-screen-md mx-auto">
+    <%- include("../../partials/header") %>
+    <main class="py-8 w-full">
+        <a
+        href="/beds"
+        class="btn transition bg-white text-primary-500 flex items-center text-lg"
+      >
+        <i data-feather="chevron-left"></i>
+        Back To Beds
+      </a>
+      <% if(bed?.externalId) {%>
+        <h1 class="my-3 py-3 text-4xl border-b">Update Bed</h1>
+      <% } else{ %>
+        <h1 class="my-3 py-3 text-4xl border-b">Create Bed</h1>
+      <% } %>
+
+      <script>
+        feather.replace();
+      </script>
+
+      <% if(errors.length > 0){ %>
+        <div class="bg-red-100 border border-red-400 text-red-700 mb-4 px-4 py-3 relative" role="alert">
+          <% errors.forEach(function(error){ %>
+            <p class="font-bold"><%= error %></p>
+          <% }) %>
+        </div>
+      <% } %>
+
+      <form action="/beds/<%- bed.id %>" class="w-2/3 mx-auto" method="post">
+        <input type="hidden" name="csrfToken" value="<%= csrfToken %>" />
+        <div class="flex flex-col mt-2">
+            <label for="name">Name</label>
+            <input class="px-2 py-1 border-2 border-black" type="text" placeholder="Bed name" name="name" id="name" value="<%- bed.name %>" />
+        </div>
+        <div class="flex flex-col mt-2">
+            <label for="externalId">External ID</label>
+            <input class="px-2 py-1 border-2 border-black" type="text" placeholder="UUID" name="externalId" id="externalId" value="<%- bed.externalId %>" />
+        </div>
+        <div class="flex flex-col mt-2">
+          <label for="name">Camera</label>
+          <select class="p-2 border-2 border-black" name="cameraId" id="cameraId">
+            <option value="" disabled selected hidden>Select a Camera</option>
+              <% cameras.forEach(function(camera){ %>
+                <option class="truncate" selected="<%= camera.cameraId === camera.id %>" value="<%= camera.id %>"><%= camera.name %></option>
+              <% }) %>
+          </select>
+        </div>
+
+        <h2 class="my-3 py-3 text-2xl">Monitor Preset:<h2>
+        <div class="flex flex-col mt-2">
+            <label for="preset_x">Preset X</label>
+            <input class="px-2 py-1 border-2 border-black" step="any" type="number" placeholder="Preset X" name="preset_x" id="preset_x" value="<%- bed.monitorPreset.x %>" />
+        </div>
+        <div class="flex flex-col mt-2">
+            <label for="preset_y">Preset Y</label>
+            <input class="px-2 py-1 border-2 border-black" step="any" type="number" placeholder="Preset Y" name="preset_y" id="preset_y" value="<%- bed.monitorPreset.y %>" />
+        </div>
+        <div class="flex flex-col mt-2">
+            <label for="preset_zoom">Preset Zoom</label>
+            <input class="px-2 py-1 border-2 border-black" step="any" type="number" placeholder="Preset Zoom" name="preset_zoom" id="preset_zoom" value="<%- bed.monitorPreset.zoom %>" />
+        </div>
+
+        <div class="flex flex-col mt-2">
+            <input class="px-4 py-2 hover:bg-green-700 bg-green-500" type="submit" value="Save" />
+        </div>
+      </form>
+    </main>
+    <%- include("../../partials/footer") %>
+  </body>
+</html>

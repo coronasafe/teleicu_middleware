@@ -1,8 +1,7 @@
-import { PrismaClient } from "@prisma/client";
 import dayjs from "dayjs";
 import type { Request, Response } from "express";
 
-const prisma = new PrismaClient();
+import prisma from "@/lib/prisma";
 
 export class BedController {
   static list = async (req: Request, res: Response) => {
@@ -21,12 +20,13 @@ export class BedController {
       const cameras = await prisma.asset.findMany({
         where: {
           deleted: false,
-          type: "CAMERA",
+          type: "ONVIF",
         },
         orderBy: [{ updatedAt: "desc" }],
       });
 
       res.render("pages/beds/list", {
+        req,
         dayjs,
         beds,
         cameras,
@@ -34,6 +34,7 @@ export class BedController {
       });
     } catch (err: any) {
       res.render("pages/beds/list", {
+        req,
         dayjs,
         beds: [],
         cameras: [],
@@ -42,16 +43,46 @@ export class BedController {
     }
   };
 
+  static createForm = async (req: Request, res: Response) => {
+    try {
+      const cameras = await prisma.asset.findMany({
+        where: {
+          deleted: false,
+          type: "ONVIF",
+        },
+        orderBy: [{ updatedAt: "desc" }],
+      });
+
+      res.render("pages/beds/form", {
+        req,
+        dayjs,
+        csrfToken: res.locals.csrfToken,
+        bed: {},
+        cameras,
+        errors: req.flash("error"),
+      });
+    } catch (err: any) {
+      req.flash("error", err.message);
+      res.redirect("/beds");
+    }
+  };
+
   static create = async (req: Request, res: Response) => {
-    const { name, externalId, cameraId, preset_x, preset_y, preset_zoom } =
-      req.body;
+    const {
+      name,
+      externalId,
+      cameraExternalId,
+      preset_x,
+      preset_y,
+      preset_zoom,
+    } = req.body;
 
     try {
       await prisma.bed.create({
         data: {
           name: name as string,
           externalId: externalId as string,
-          cameraId: Number(cameraId),
+          cameraExternalId: String(cameraExternalId),
           monitorPreset: {
             create: {
               x: Number(preset_x),
@@ -69,7 +100,7 @@ export class BedController {
     }
   };
 
-  static show = async (req: Request, res: Response) => {
+  static editForm = async (req: Request, res: Response) => {
     const { id } = req.params;
 
     try {
@@ -86,13 +117,15 @@ export class BedController {
       const cameras = await prisma.asset.findMany({
         where: {
           deleted: false,
-          type: "CAMERA",
+          type: "ONVIF",
         },
         orderBy: [{ updatedAt: "desc" }],
       });
 
-      res.render("pages/beds/edit", {
+      res.render("pages/beds/form", {
+        req,
         dayjs,
+        csrfToken: res.locals.csrfToken,
         bed,
         cameras,
         errors: req.flash("error"),
@@ -105,8 +138,14 @@ export class BedController {
 
   static edit = async (req: Request, res: Response) => {
     const { id } = req.params;
-    const { name, externalId, cameraId, preset_x, preset_y, preset_zoom } =
-      req.body;
+    const {
+      name,
+      externalId,
+      cameraExternalId,
+      preset_x,
+      preset_y,
+      preset_zoom,
+    } = req.body;
 
     try {
       await prisma.bed.update({
@@ -116,7 +155,7 @@ export class BedController {
         data: {
           name,
           externalId,
-          cameraId: Number(cameraId) || undefined,
+          cameraExternalId: String(cameraExternalId) || undefined,
           monitorPreset: {
             update: {
               x: Number(preset_x) || undefined,
@@ -144,7 +183,12 @@ export class BedController {
         },
       });
 
-      res.render("pages/beds/delete", { dayjs, bed });
+      res.render("pages/beds/delete", {
+        req,
+        dayjs,
+        csrfToken: res.locals.csrfToken,
+        bed,
+      });
     } catch (err: any) {
       req.flash("error", err.message);
       res.redirect("/beds");

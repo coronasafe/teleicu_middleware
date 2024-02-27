@@ -1,8 +1,7 @@
-import { PrismaClient } from "@prisma/client";
 import dayjs from "dayjs";
 import { Request, Response } from "express";
 
-const prisma = new PrismaClient();
+import prisma from "@/lib/prisma";
 
 export class AssetConfigController {
   static listAssets = async (req: Request, res: Response) => {
@@ -21,14 +20,16 @@ export class AssetConfigController {
         orderBy: [{ updatedAt: "desc" }],
       });
 
-      res.render("pages/assetList", {
+      res.render("pages/assets/list", {
+        req,
         dayjs,
         assets,
         beds,
         errors: req.flash("error"),
       });
     } catch (err: any) {
-      res.render("pages/assetList", {
+      res.render("pages/assets/list", {
+        req,
         dayjs,
         assets: [],
         beds: [],
@@ -37,44 +38,75 @@ export class AssetConfigController {
     }
   };
 
+  static createAssetForm = async (req: Request, res: Response) => {
+    res.render("pages/assets/form", {
+      req,
+      dayjs,
+      csrfToken: res.locals.csrfToken,
+      asset: {},
+      errors: req.flash("error"),
+    });
+  };
+
   static createAsset = async (req: Request, res: Response) => {
-    const {
-      name,
-      type,
-      description,
-      ipAddress,
-      externalId,
-      username,
-      password,
-      port,
-    } = req.body;
-    prisma.asset
-      .create({
-        data: {
-          name,
-          type,
-          description,
-          ipAddress,
+    try {
+      const {
+        name,
+        type,
+        description,
+        ipAddress,
+        accessKey,
+        externalId,
+        username,
+        password,
+        port,
+      } = req.body;
+
+      let asset = await prisma.asset.findFirst({ where: { ipAddress } });
+      if (asset) {
+        req.flash("error", "IP Address already in use");
+        res.redirect("/assets/new");
+        return;
+      }
+
+      const values = {
+        name,
+        type,
+        description,
+        ipAddress,
+        accessKey,
+        externalId,
+        username,
+        password,
+        port: Number(port),
+      };
+
+      // restore asset if it was deleted else create new asset
+      await prisma.asset.upsert({
+        where: {
           externalId,
-          username,
-          password,
-          port: Number(port),
         },
-      })
-      .then(() => {
-        res.redirect("/assets");
-      })
-      .catch((err: any) => {
-        req.flash("error", err.message);
-        res.redirect("/assets");
+        update: {
+          ...values,
+        },
+        create: {
+          ...values,
+          externalId,
+        },
       });
+
+      res.redirect("/assets");
+    } catch (error: any) {
+      req.flash("error", error?.message ?? "An error occurred");
+      res.redirect("/assets");
+    }
   };
 
   static updateAssetForm = async (req: Request, res: Response) => {
     try {
       const asset = await prisma.asset.findUniqueOrThrow({
         where: {
-          id: Number(req.params.id),
+          externalId: String(req.params.externalId),
         },
       });
 
@@ -85,8 +117,10 @@ export class AssetConfigController {
         orderBy: [{ updatedAt: "desc" }],
       });
 
-      res.render("pages/assetForm", {
+      res.render("pages/assets/form", {
+        req,
         dayjs,
+        csrfToken: res.locals.csrfToken,
         asset,
         beds,
         errors: req.flash("error"),
@@ -98,65 +132,110 @@ export class AssetConfigController {
   };
 
   static updateAsset = async (req: Request, res: Response) => {
-    const {
-      name,
-      description,
-      externalId,
-      ipAddress,
-      username,
-      password,
-      port,
-    } = req.body;
-    prisma.asset
-      .update({
+    try {
+      const {
+        name,
+        description,
+        externalId,
+        ipAddress,
+        type,
+        accessKey,
+        username,
+        password,
+        port,
+      } = req.body;
+
+      const asset = await prisma.asset.findFirst({
         where: {
-          id: Number(req.params.id),
+          ipAddress: {
+            equals: ipAddress,
+          },
+          externalId: {
+            not: String(req.params.externalId),
+          },
+        },
+      });
+      if (asset) {
+        req.flash("error", "IP Address already in use");
+        res.redirect("/assets");
+        return;
+      }
+
+      await prisma.asset.update({
+        where: {
+          externalId: String(req.params.externalId),
         },
         data: {
           name,
           description,
           externalId,
           ipAddress,
+          accessKey,
+          type,
           updatedAt: new Date(),
           username,
           password,
           port: Number(port),
         },
-      })
-      .then(() => {
-        res.redirect("/assets");
-      })
-      .catch((err: any) => {
-        req.flash("error", err.message);
-        res.redirect(`/assets/${req.params.id}`);
       });
+      res.redirect("/assets");
+    } catch (error: any) {
+      req.flash("error", error?.message ?? "An error occurred");
+      res.redirect("/assets");
+    }
   };
 
   static confirmDeleteAsset = async (req: Request, res: Response) => {
-    const asset = await prisma.asset.findUnique({
-      where: {
-        id: Number(req.params.id),
-      },
-    });
-    res.render("pages/assetDelete", { dayjs, asset });
+    try {
+      const asset = await prisma.asset.findUnique({
+        where: {
+          externalId: String(req.params.externalId),
+        },
+      });
+      if (!asset) {
+        req.flash("error", "Asset not found");
+        res.redirect("/assets");
+        return;
+      }
+      res.render("pages/assets/delete", {
+        req,
+        csrfToken: res.locals.csrfToken,
+        dayjs,
+        asset,
+      });
+    } catch (err: any) {
+      req.flash("error", err.message);
+      res.redirect("/assets");
+    }
   };
 
   static deleteAsset = async (req: Request, res: Response) => {
-    prisma.asset
-      .update({
+    try {
+      const asset = await prisma.asset.findUnique({
         where: {
-          id: Number(req.params.id),
+          externalId: String(req.params.externalId),
+        },
+      });
+
+      if (!asset) {
+        req.flash("error", "Asset not found");
+        res.redirect("/assets");
+        return;
+      }
+
+      await prisma.asset.update({
+        where: {
+          externalId: asset.externalId,
         },
         data: {
           deleted: true,
+          ipAddress: asset.ipAddress + "_deleted",
         },
-      })
-      .then(() => {
-        res.redirect("/assets");
-      })
-      .catch((err: any) => {
-        req.flash("error", err.message);
-        res.redirect("/assets");
       });
+      res.redirect("/assets");
+    } catch (error: any) {
+      req.flash("error", error.message);
+      res.redirect("/assets");
+    }
   };
 }

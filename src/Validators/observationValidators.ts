@@ -1,4 +1,5 @@
-import { query, body } from "express-validator";
+import { body, query } from "express-validator";
+
 import { baseCameraParamsValidators } from "@/Validators/cameraValidators";
 
 const Observations = {
@@ -22,7 +23,7 @@ const baseObservationValidators = [
     .withMessage("observation_id must be string.")
     .isIn(Object.values(Observations))
     .withMessage(
-      "observation_id must be one of: " + Object.values(Observations)
+      "observation_id must be one of: " + Object.values(Observations),
     ),
   body("*.device_id")
     .exists({ checkFalsy: true })

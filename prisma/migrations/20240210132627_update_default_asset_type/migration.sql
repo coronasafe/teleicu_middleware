@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "Asset" ALTER COLUMN "type" SET DEFAULT 'HL7MONITOR';

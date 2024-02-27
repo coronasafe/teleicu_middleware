@@ -1,8 +1,8 @@
 #!/bin/sh
 
-#migrate database
+set -e
+
+npm run generate-keys
 npx prisma generate
 npx prisma migrate deploy
-
-# start server
 npm run start
